@@ -1,26 +1,95 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import "./App.css";
+import Hello from "./components/Hello";
+import Profile from "./components/Profile";
+import LogComponent from "./concerns/LogComponent";
+import { httpClient } from "./helpers";
+import Todo from "./components/Todo";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  state = {
+    name: "Rannie",
+    age: 0,
+    todos: []
+  };
+
+  static defaultProps = {
+    animal: "Hen"
+  };
+
+  handleTextChange = evt => {
+    evt.persist();
+    this.setState(
+      {
+        [evt.target.name]: evt.target.value
+      },
+      () => {
+        console.log(evt);
+      }
+    );
+  };
+
+  showHomePage = () => {
+    const { name, age } = this.state;
+    return (
+      <div className="App">
+        <Hello name={name} />
+        <Profile />
+        <p>My name is {name}</p>
+        <p>My age is {age}</p>
+        <input
+          type="text"
+          name="name"
+          value={name}
+          placeholder="Enter name"
+          onChange={this.handleTextChange}
+        />
+        <input
+          type="text"
+          name="age"
+          value={age}
+          placeholder="Enter age"
+          onChange={this.handleTextChange}
+        />
+      </div>
+    );
+  };
+
+  showNotFound = () => {
+    const { name } = this.state;
+    return (
+      <div>
+        <h1>User is not {name}</h1>
+      </div>
+    );
+  };
+
+  logData = () => {
+    console.log("Logging data!");
+  };
+
+  componentDidMount() {
+    httpClient({
+      url: "https://jsonplaceholder.typicode.com/todos",
+      method: "get"
+    }).then(response => {
+      this.setState({
+        todos: response.data
+      });
+    });
+  }
+
+  render() {
+    const { name, todos } = this.state;
+    // return name === "Rannie" ? this.showHomePage() : this.showNotFound();
+    return (
+      <ul>
+        {todos.map((todo, index) => {
+          return <Todo todo={todo} key={index} />;
+        })}
+      </ul>
+    );
+  }
 }
 
-export default App;
+export default LogComponent(App);
